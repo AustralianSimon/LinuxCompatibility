@@ -1,0 +1,55 @@
+[
+  {
+    "DisplayName": "Mozilla Firefox",
+    "Publisher": "Mozilla",
+    "DisplayVersion": "128.0",
+    "InstallDate": "20240801"
+  },
+  {
+    "DisplayName": "Google Chrome",
+    "Publisher": "Google LLC",
+    "DisplayVersion": "126.0.6478.127",
+    "InstallDate": "20240715"
+  },
+  {
+    "DisplayName": "Adobe Photoshop 2024",
+    "Publisher": "Adobe Inc.",
+    "DisplayVersion": "25.9.0",
+    "InstallDate": "20240601"
+  },
+  {
+    "DisplayName": "Steam",
+    "Publisher": "Valve Corporation",
+    "DisplayVersion": "",
+    "InstallDate": "20230101"
+  },
+  {
+    "DisplayName": "Visual Studio Code",
+    "Publisher": "Microsoft Corporation",
+    "DisplayVersion": "1.91.0",
+    "InstallDate": "20240710"
+  },
+  {
+    "DisplayName": "Windows Update (KB5040438)",
+    "Publisher": "Microsoft",
+    "SystemComponent": "1"
+  },
+  {
+    "DisplayName": "Hotfix update",
+    "ParentKeyName": "KB1234567"
+  },
+  {
+    "DisplayName": "7-Zip 24.08 (x64)",
+    "Publisher": "Igor Pavlov",
+    "DisplayVersion": "24.08"
+  },
+  {
+    "DisplayName": "Discord",
+    "Publisher": "Discord Inc.",
+    "DisplayVersion": "1.0.9037"
+  },
+  {
+    "DisplayName": "",
+    "Publisher": "Unknown"
+  }
+]

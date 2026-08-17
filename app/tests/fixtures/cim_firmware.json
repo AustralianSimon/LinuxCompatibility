@@ -1,0 +1,7 @@
+{
+  "SecureBoot": true,
+  "BitLocker": "Off",
+  "StorageMode": "AHCI",
+  "DiskStyle": "GPT",
+  "FreeGB": 250.5
+}

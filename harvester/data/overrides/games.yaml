@@ -1,0 +1,45 @@
+# Hand-curated game overrides.
+# Use sparingly — most game data comes from ProtonDB + Steam + AreWeAntiCheatYet.
+# Add here when: automated rating is misleading, anticheat state is definitive,
+# or the game needs a specific user-visible note.
+
+games:
+  - steam_appid: 1938090
+    name: "Call of Duty: Modern Warfare III"
+    native_linux: 0
+    deck_verified: unsupported
+    proton_tier: borked
+    proton_sample: 0
+    anticheat: kernel_blocked
+    notes: >
+      Kernel-level Ricochet anticheat. Activision has not enabled Linux support.
+      No workaround exists — this is a hard blocker.
+
+  - steam_appid: 359550
+    name: "Tom Clancy's Rainbow Six Siege"
+    native_linux: 0
+    deck_verified: unsupported
+    proton_tier: borked
+    proton_sample: 0
+    anticheat: kernel_blocked
+    notes: BattlEye kernel-level anticheat. BattlEye Linux support not enabled by publisher.
+
+  - steam_appid: 570
+    name: Dota 2
+    native_linux: 1
+    deck_verified: verified
+    proton_tier: platinum
+    proton_sample: 500
+    anticheat: none
+    notes: First-party Linux client. One of the best-supported Linux games on Steam.
+
+  - steam_appid: 1091500
+    name: Cyberpunk 2077
+    native_linux: 0
+    deck_verified: playable
+    proton_tier: gold
+    proton_sample: 4812
+    anticheat: none
+    notes: >
+      Excellent Proton compatibility. REDmod (modding tool) does not run on Linux,
+      but most mods that don't require REDmod work fine.

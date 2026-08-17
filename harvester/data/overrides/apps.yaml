@@ -1,0 +1,90 @@
+# Hand-curated app overrides — these always win over automated sources.
+# PR-gated. Add entries when:
+#   - automated matching produces a wrong verdict
+#   - a popular app needs a nuanced note
+#   - alternatives need specific rationale/caveats
+
+apps:
+  - app_id: adobe.photoshop
+    name: Adobe Photoshop
+    publisher: Adobe
+    category: creative
+    verdict: replace
+    confidence: high
+    linux_native: 0
+    notes: >
+      No Linux version exists and none is planned.
+      For photo editing: GIMP or Krita are the closest open-source alternatives.
+      For .psd compatibility: Photopea (web) or Affinity Photo (Wine, mixed results).
+    aliases:
+      - adobe photoshop
+      - photoshop
+    alternatives:
+      - alt_app_id: krita.krita
+        alt_name: Krita
+        rank: 1
+        rationale: Excellent for digital painting and raster editing
+        caveat: No CMYK workflow; no Photoshop-style adjustment layers
+      - alt_app_id: gimp.gimp
+        alt_name: GIMP
+        rank: 2
+        rationale: Full-featured raster editor, opens PSDs
+        caveat: Steeper learning curve; no CMYK
+      - alt_app_id: photopea.web
+        alt_name: Photopea
+        rank: 3
+        rationale: Web-based Photoshop UI clone, opens .psd and .ai files
+        caveat: Requires internet; free tier has ads
+
+  - app_id: adobe.premiere
+    name: Adobe Premiere Pro
+    publisher: Adobe
+    category: creative
+    verdict: replace
+    confidence: high
+    linux_native: 0
+    notes: No Linux version. DaVinci Resolve has a full-featured free tier on Linux.
+    aliases:
+      - adobe premiere pro
+      - premiere pro
+      - premiere
+    alternatives:
+      - alt_app_id: davinci.resolve
+        alt_name: DaVinci Resolve
+        rank: 1
+        rationale: Professional NLE, free tier is full-featured on Linux
+        caveat: Requires modern GPU; some export formats are paid-tier only
+      - alt_app_id: kdenlive.kdenlive
+        alt_name: Kdenlive
+        rank: 2
+        rationale: Full-featured open-source NLE
+        caveat: Different workflow from Premiere
+
+  - app_id: microsoft.office
+    name: Microsoft Office
+    publisher: Microsoft
+    category: office
+    verdict: web
+    confidence: high
+    linux_native: 0
+    notes: >
+      Microsoft 365 web apps work well on Linux via any browser.
+      For offline use: LibreOffice is the closest equivalent, with good format compatibility.
+      Excel macro-heavy workbooks may have compatibility issues in LibreOffice Calc.
+    aliases:
+      - microsoft office
+      - office
+      - microsoft 365
+      - office 365
+      - ms office
+
+  - app_id: valve.steam
+    name: Steam
+    publisher: Valve
+    category: utility
+    verdict: native
+    confidence: exact
+    linux_native: 1
+    notes: Steam has a first-class Linux client. Most games launch via Proton automatically.
+    aliases:
+      - steam

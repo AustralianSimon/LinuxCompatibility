@@ -1,0 +1,8 @@
+services:
+  harvester:
+    build: .
+    volumes:
+      - ./data/overrides:/harvester/data/overrides:ro
+      - ./output:/output
+    environment:
+      - PYTHONUNBUFFERED=1

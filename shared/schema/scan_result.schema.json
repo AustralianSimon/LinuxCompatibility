@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scan_result.schema.json",
+  "title": "ScanResult",
+  "description": "Output of a LinuxReadyAmI scan",
+  "type": "object",
+  "required": ["schema_version", "scan_id", "scanned_at", "db_build", "app_version", "system", "collectors", "items", "score"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "scan_id": {"type": "string", "format": "uuid"},
+    "scanned_at": {"type": "string", "format": "date-time"},
+    "db_build": {"type": "string"},
+    "app_version": {"type": "string"},
+    "system": {
+      "type": "object",
+      "properties": {
+        "os_version": {"type": "string"},
+        "cpu": {"type": "string"},
+        "ram_gb": {"type": ["number", "null"]},
+        "secure_boot": {"type": ["boolean", "null"]}
+      }
+    },
+    "collectors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "status", "duration_ms", "warnings"],
+        "properties": {
+          "id": {"type": "string"},
+          "status": {"type": "string", "enum": ["ok", "partial", "failed", "skipped"]},
+          "duration_ms": {"type": "integer"},
+          "warnings": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "raw_name", "raw_keys"],
+        "properties": {
+          "source": {"type": "string"},
+          "raw_name": {"type": "string"},
+          "raw_keys": {"type": "object"},
+          "matched_id": {"type": ["string", "null"]},
+          "match_tier": {"type": ["integer", "null"]},
+          "match_confidence": {
+            "type": ["string", "null"],
+            "enum": ["exact", "high", "medium", "low", "unknown", null]
+          },
+          "verdict": {"type": ["string", "null"]},
+          "verdict_reason": {"type": ["string", "null"]},
+          "is_blocker": {"type": "boolean"},
+          "evidence": {"type": "array", "items": {"type": "string"}},
+          "actions": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "score": {
+      "type": "object",
+      "required": ["value", "hard_blockers", "unknown_count"],
+      "properties": {
+        "value": {"type": "integer", "minimum": 0, "maximum": 100},
+        "hard_blockers": {"type": "integer", "minimum": 0},
+        "unknown_count": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

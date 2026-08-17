@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LinuxReadyAmI — Compatibility Report</title>
+<style>
+:root {
+  --bg:      #1a1a2e;
+  --bg2:     #16213e;
+  --bg3:     #0f3460;
+  --accent:  #00b4d8;
+  --accent2: #0077b6;
+  --text:    #e0e0e0;
+  --text2:   #a0a0b0;
+  --pass:    #06d6a0;
+  --partial: #ffd166;
+  --fail:    #ef476f;
+  --unknown: #888;
+  --border:  #2a2a4a;
+  --radius:  8px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif;
+       font-size: 15px; line-height: 1.6; }
+a { color: var(--accent); }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px 60px; }
+
+/* ── Header ── */
+header { background: var(--bg2); border-bottom: 2px solid var(--accent); padding: 18px 20px; }
+header .inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+.logo { font-size: 1.4rem; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
+.meta { font-size: 0.78rem; color: var(--text2); text-align: right; line-height: 1.4; }
+
+/* ── Score card ── */
+.score-card { display: flex; gap: 20px; flex-wrap: wrap; margin: 32px 0 24px; }
+.score-main { background: var(--bg2); border: 2px solid var(--accent); border-radius: var(--radius);
+              padding: 28px 36px; display: flex; align-items: center; gap: 24px; }
+.score-num  { font-size: 4rem; font-weight: 800; color: var(--accent); line-height: 1; }
+.score-denom{ font-size: 1.1rem; color: var(--text2); align-self: flex-end; padding-bottom: 6px; }
+.score-label{ font-size: 0.85rem; color: var(--text2); margin-top: 4px; }
+.score-stats{ display: flex; gap: 12px; flex-wrap: wrap; align-items: stretch; }
+.stat-box   { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+              padding: 16px 22px; min-width: 120px; }
+.stat-box .n{ font-size: 2rem; font-weight: 700; line-height: 1; }
+.stat-box .l{ font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
+.stat-box.danger  { border-color: var(--fail);    }
+.stat-box.danger .n { color: var(--fail);  }
+.stat-box.warning { border-color: var(--partial); }
+.stat-box.warning .n{ color: var(--partial); }
+
+/* ── Section titles ── */
+h2 { font-size: 1.15rem; font-weight: 600; color: var(--accent); margin: 32px 0 14px;
+     padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 1rem; font-weight: 600; margin-bottom: 10px; color: var(--text); }
+
+/* ── Blocker list ── */
+.blocker { background: rgba(239,71,111,.12); border: 1px solid var(--fail); border-radius: var(--radius);
+           padding: 14px 16px; margin-bottom: 10px; }
+.blocker .name { font-weight: 600; color: var(--fail); }
+.blocker ul    { margin: 6px 0 0 18px; font-size: 0.88rem; color: var(--text2); }
+
+/* ── Tables ── */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+th { text-align: left; padding: 8px 12px; font-size: 0.78rem; font-weight: 600;
+     text-transform: uppercase; letter-spacing: .04em; color: var(--text2);
+     border-bottom: 2px solid var(--border); background: var(--bg2); }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:hover td { background: rgba(255,255,255,.03); }
+tr.is-blocker td { background: rgba(239,71,111,.06); }
+
+/* ── Verdict badges ── */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 20px;
+         font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+.v-pass    { background: rgba(6,214,160,.15);  color: var(--pass);    border: 1px solid var(--pass); }
+.v-partial { background: rgba(255,209,102,.12);color: var(--partial); border: 1px solid var(--partial); }
+.v-fail    { background: rgba(239,71,111,.15); color: var(--fail);    border: 1px solid var(--fail); }
+.v-unknown { background: rgba(136,136,136,.1); color: var(--unknown); border: 1px solid var(--unknown); }
+
+/* ── Evidence / actions ── */
+.ev { margin: 4px 0 0; padding-left: 14px; list-style: disc; }
+.ev li { color: var(--text2); font-size: 0.82rem; }
+.actions { margin: 4px 0 0; }
+.actions li { color: var(--accent2); font-size: 0.82rem; font-family: monospace; }
+
+/* ── Anticheat note banner ── */
+.notice { background: rgba(0,180,216,.08); border: 1px solid var(--accent2); border-radius: var(--radius);
+          padding: 12px 16px; margin: 16px 0; font-size: 0.86rem; color: var(--text2); }
+.notice strong { color: var(--accent); }
+
+/* ── Footer ── */
+footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border);
+         font-size: 0.78rem; color: var(--text2); text-align: center; line-height: 1.8; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <span class="logo">LinuxReadyAmI</span>
+    <div class="meta">
+      Scanned {{ result.scanned_at[:10] }} &nbsp;·&nbsp;
+      App {{ result.app_version }} &nbsp;·&nbsp;
+      DB {{ result.db_build }}
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ── Score ── -->
+  <div class="score-card">
+    <div class="score-main">
+      <div>
+        <div style="display:flex;align-items:flex-end;gap:4px">
+          <span class="score-num">{{ result.score.value }}</span>
+          <span class="score-denom">/100</span>
+        </div>
+        <div class="score-label">Readiness score</div>
+      </div>
+    </div>
+    <div class="score-stats">
+      <div class="stat-box {% if result.score.hard_blockers > 0 %}danger{% endif %}">
+        <div class="n">{{ result.score.hard_blockers }}</div>
+        <div class="l">Hard blocker{{ 's' if result.score.hard_blockers != 1 }}</div>
+      </div>
+      <div class="stat-box {% if result.score.unknown_count > 0 %}warning{% endif %}">
+        <div class="n">{{ result.score.unknown_count }}</div>
+        <div class="l">Unknown item{{ 's' if result.score.unknown_count != 1 }}</div>
+      </div>
+      <div class="stat-box">
+        <div class="n">{{ result.items | length }}</div>
+        <div class="l">Items scanned</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Hard blockers ── -->
+  {% if blockers %}
+  <h2>🚫 Hard Blockers</h2>
+  {% for item in blockers %}
+  <div class="blocker">
+    <div class="name">{{ item.raw_name }}</div>
+    {% if item.evidence %}
+    <ul>{% for e in item.evidence %}<li>{{ e }}</li>{% endfor %}</ul>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <!-- ── Games ── -->
+  {% if games %}
+  <h2>Games ({{ games | length }})</h2>
+  <div class="notice">
+    <strong>Anticheat note:</strong> Status as of DB build {{ result.db_build }}.
+    Anticheat support can change without notice — check
+    <a href="https://areweanticheatyet.com" target="_blank">AreWeAntiCheatYet.com</a>
+    for the current state of a specific game.
+  </div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr>
+      <th>Game</th><th>Verdict</th><th>Evidence</th>
+    </tr></thead>
+    <tbody>
+    {% for item in games | sort(attribute='is_blocker', reverse=true) %}
+    <tr {% if item.is_blocker %}class="is-blocker"{% endif %}>
+      <td><strong>{{ item.raw_name }}</strong>
+          {% if item.raw_keys.steam_appid %}
+          <br><span style="color:var(--text2);font-size:.78rem">AppID {{ item.raw_keys.steam_appid }}</span>
+          {% endif %}
+      </td>
+      <td><span class="badge {{ verdict_css(item.verdict) }}">{{ verdict_label(item.verdict) }}</span></td>
+      <td>
+        {% if item.evidence %}
+        <ul class="ev">{% for e in item.evidence %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if item.actions %}
+        <ul class="actions ev">{% for a in item.actions %}<li>{{ a }}</li>{% endfor %}</ul>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
+
+  <!-- ── Apps ── -->
+  {% if apps %}
+  <h2>Applications ({{ apps | length }})</h2>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr>
+      <th>Application</th><th>Publisher</th><th>Verdict</th><th>Details</th>
+    </tr></thead>
+    <tbody>
+    {% for item in apps | sort(attribute='is_blocker', reverse=true) %}
+    <tr {% if item.is_blocker %}class="is-blocker"{% endif %}>
+      <td><strong>{{ item.raw_name }}</strong></td>
+      <td style="color:var(--text2)">{{ item.raw_keys.publisher or '—' }}</td>
+      <td><span class="badge {{ verdict_css(item.verdict) }}">{{ verdict_label(item.verdict) }}</span></td>
+      <td>
+        {% if item.evidence %}
+        <ul class="ev">{% for e in item.evidence %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if item.actions %}
+        <ul class="actions ev">{% for a in item.actions %}<li>{{ a }}</li>{% endfor %}</ul>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
+
+  <!-- ── Hardware ── -->
+  {% if hardware %}
+  <h2>Hardware ({{ hardware | length }})</h2>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr>
+      <th>Device</th><th>Class</th><th>Verdict</th><th>Notes</th>
+    </tr></thead>
+    <tbody>
+    {% for item in hardware | sort(attribute='is_blocker', reverse=true) %}
+    <tr {% if item.is_blocker %}class="is-blocker"{% endif %}>
+      <td><strong>{{ item.raw_name }}</strong></td>
+      <td style="color:var(--text2)">{{ item.raw_keys.class or '—' }}</td>
+      <td><span class="badge {{ verdict_css(item.verdict) }}">{{ verdict_label(item.verdict) }}</span></td>
+      <td>
+        {% if item.evidence %}
+        <ul class="ev">{% for e in item.evidence %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
+
+  <!-- ── Unknowns ── -->
+  {% if unknowns %}
+  <h2>Not in database ({{ unknowns | length }})</h2>
+  <p style="color:var(--text2);font-size:.88rem;margin-bottom:12px">
+    These items were found but not matched in the compatibility database.
+    They are not counted as passing or failing in the score.
+  </p>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Name</th><th>Source</th><th>Match confidence</th></tr></thead>
+    <tbody>
+    {% for item in unknowns %}
+    <tr>
+      <td>{{ item.raw_name }}</td>
+      <td style="color:var(--text2)">{{ item.source }}</td>
+      <td><span class="badge v-unknown">{{ item.match_confidence or 'no match' }}</span></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
+
+  <!-- ── Collector summary ── -->
+  <h2>Scan summary</h2>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Collector</th><th>Status</th><th>Duration</th><th>Warnings</th></tr></thead>
+    <tbody>
+    {% for c in result.collectors %}
+    <tr>
+      <td>{{ c.id }}</td>
+      <td><span class="badge {% if c.status == 'ok' %}v-pass{% elif c.status == 'skipped' %}v-unknown{% else %}v-partial{% endif %}">{{ c.status }}</span></td>
+      <td style="color:var(--text2)">{{ c.duration_ms }} ms</td>
+      <td style="color:var(--text2);font-size:.82rem">
+        {% if c.warnings %}{{ c.warnings | join('; ') }}{% else %}—{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+
+</div><!-- /wrap -->
+
+<footer>
+  LinuxReadyAmI {{ result.app_version }} &nbsp;·&nbsp;
+  DB {{ result.db_build }} &nbsp;·&nbsp;
+  Scan {{ result.scan_id[:8] }}&hellip;<br>
+  Data sources: ProtonDB &middot; Steam &middot; Flathub &middot; WineHQ AppDB &middot;
+  AreWeAntiCheatYet &middot; pci.ids &middot; Repology<br>
+  GPL-3.0 &mdash; no data was sent to any server during this scan.
+</footer>
+
+</body>
+</html>

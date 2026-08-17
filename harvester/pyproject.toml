@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "linuxready-harvester"
+version = "0.1.0"
+requires-python = ">=3.11"
+license = {text = "GPL-3.0-only"}
+dependencies = [
+    "requests>=2.32",
+    "PyYAML>=6.0",
+    "rapidfuzz>=3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+harvest = "harvester.build_db:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/harvester"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,34 @@
+{
+  "GPUs": [
+    {
+      "Name": "NVIDIA GeForce RTX 4070",
+      "PNPDeviceID": "PCI\\VEN_10DE&DEV_2786&SUBSYS_40E91043&REV_A1\\4&123ABC&0&0008",
+      "AdapterRAM": 12884901888
+    }
+  ],
+  "PnPDevices": [
+    {
+      "Name": "Intel(R) Wi-Fi 6E AX211 160MHz",
+      "PNPDeviceID": "PCI\\VEN_8086&DEV_2725&SUBSYS_00248086&REV_1A\\4&2B3C4D&0&00E0",
+      "Class": "Net"
+    },
+    {
+      "Name": "Realtek High Definition Audio",
+      "PNPDeviceID": "HDAUDIO\\FUNC_01&VEN_10EC&DEV_0A23&SUBSYS_10431BAC&REV_1001\\4&DEAD1234&0&0001",
+      "Class": "Media"
+    }
+  ],
+  "NetworkAdapters": [
+    {
+      "Name": "Intel(R) Wi-Fi 6E AX211 160MHz",
+      "MACAddress": "AA:BB:CC:DD:EE:FF",
+      "PNPDeviceID": "PCI\\VEN_8086&DEV_2725&SUBSYS_00248086&REV_1A\\4&2B3C4D&0&00E0"
+    }
+  ],
+  "System": {
+    "Manufacturer": "ASUSTeK COMPUTER INC.",
+    "Model": "ROG STRIX Z790-E GAMING WIFI",
+    "CPU": "Intel(R) Core(TM) i9-13900K",
+    "RamGB": 32.0
+  }
+}
