@@ -24,6 +24,9 @@ htmlcov/
 *.sqlite
 *.sqlite3
 
+# Allow the pre-built compat.db shipped with releases
+!harvester/compat.db
+
 # Build outputs
 out.html
 out.json

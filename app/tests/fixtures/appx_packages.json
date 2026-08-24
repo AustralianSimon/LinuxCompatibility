@@ -1,0 +1,74 @@
+[
+  {
+    "PackageName":       "VideoLAN.VLC",
+    "PackageFamilyName": "VideoLAN.VLC_paz6r1rewnh0a",
+    "DisplayName":       "VLC",
+    "Publisher":         "VideoLAN",
+    "Version":           "3.2.1.0",
+    "SignatureKind":     3
+  },
+  {
+    "PackageName":       "GIMP.43237F745459",
+    "PackageFamilyName": "GIMP.43237F745459_nq49gba4h4mx8",
+    "DisplayName":       "GIMP",
+    "Publisher":         "GIMP",
+    "Version":           "1.1.23.0",
+    "SignatureKind":     3
+  },
+  {
+    "PackageName":       "DBeaverCorp.DBeaverCE",
+    "PackageFamilyName": "DBeaverCorp.DBeaverCE_1b7tdvn0p0f9y",
+    "DisplayName":       "DBeaver CE",
+    "Publisher":         "DBeaver Corp",
+    "Version":           "24.1.0.0",
+    "SignatureKind":     3
+  },
+  {
+    "PackageName":       "NVIDIACorp.NVIDIAControlPanel",
+    "PackageFamilyName": "NVIDIACorp.NVIDIAControlPanel_56jybvy8sckqj",
+    "DisplayName":       "NVIDIA Control Panel",
+    "Publisher":         "NVIDIA Corp.",
+    "Version":           "8.1.969.0",
+    "SignatureKind":     3
+  },
+  {
+    "PackageName":       "Microsoft.Teams",
+    "PackageFamilyName": "Microsoft.Teams_8wekyb3d8bbwe",
+    "DisplayName":       "Microsoft Teams",
+    "Publisher":         "Microsoft Corporation",
+    "Version":           "24168.3500.3049.5253",
+    "SignatureKind":     3
+  },
+  {
+    "PackageName":       "MicrosoftCorporationII.WinAppRuntime.Main.1.4",
+    "PackageFamilyName": "MicrosoftCorporationII.WinAppRuntime.Main.1.4_8wekyb3d8bbwe",
+    "DisplayName":       "WinAppRuntime.Main.1.4",
+    "Publisher":         "Microsoft Corporation",
+    "Version":           "4000.1082.2259.0",
+    "SignatureKind":     1
+  },
+  {
+    "PackageName":       "Microsoft.WinAppRuntime.DDLM.4000.1082.2259.0-x6",
+    "PackageFamilyName": "Microsoft.WinAppRuntime.DDLM.4000.1082.2259.0-x6_8wekyb3d8bbwe",
+    "DisplayName":       "Windows App Runtime DDLM 4000.1082.2259.0-x6",
+    "Publisher":         "Microsoft Corporation",
+    "Version":           "4000.1082.2259.0",
+    "SignatureKind":     1
+  },
+  {
+    "PackageName":       "Microsoft.XboxSpeechToTextOverlay",
+    "PackageFamilyName": "Microsoft.XboxSpeechToTextOverlay_8wekyb3d8bbwe",
+    "DisplayName":       null,
+    "Publisher":         "Microsoft Corporation",
+    "Version":           "1.97.17002.0",
+    "SignatureKind":     3
+  },
+  {
+    "PackageName":       "Microsoft.VCLibs.140.00",
+    "PackageFamilyName": "Microsoft.VCLibs.140.00_8wekyb3d8bbwe",
+    "DisplayName":       "ms-resource://Microsoft.VCLibs.140.00/Resources/DisplayName",
+    "Publisher":         "Microsoft Corporation",
+    "Version":           "14.0.33519.0",
+    "SignatureKind":     3
+  }
+]

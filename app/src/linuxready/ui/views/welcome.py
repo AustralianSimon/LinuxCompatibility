@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (QLabel, QPushButton, QVBoxLayout, QWidget,
                                 QFrame, QHBoxLayout)
 
 from ...config import APP_NAME
+from .db_update import DbUpdateDialog
 
 
 class WelcomeView(QWidget):
@@ -42,7 +43,7 @@ class WelcomeView(QWidget):
         what.setStyleSheet("font-size: 13px; color: #c0c0d0; line-height: 1.5;")
 
         privacy = QLabel(
-            "🔒  Nothing leaves your PC. No network calls. Read-only scan."
+            "\U0001f512  Your scan never leaves your PC. Read-only."
         )
         privacy.setStyleSheet("font-size: 12px; color: #06d6a0; padding: 8px 0;")
         privacy.setAlignment(Qt.AlignCenter)
@@ -57,11 +58,25 @@ class WelcomeView(QWidget):
         )
         self._btn.clicked.connect(self.scan_requested)
 
+        self._update_btn = QPushButton("Update database…")
+        self._update_btn.setFixedHeight(32)
+        self._update_btn.setStyleSheet(
+            "QPushButton { background: transparent; color: #a0a0b0; "
+            "font-size: 12px; border: 1px solid #2a2a4a; border-radius: 5px; }"
+            "QPushButton:hover { color: #00b4d8; border-color: #00b4d8; }"
+        )
+        self._update_btn.clicked.connect(self._open_update_dialog)
+
         lay.addWidget(title)
         lay.addWidget(subtitle)
         lay.addWidget(divider)
         lay.addWidget(what)
         lay.addWidget(privacy)
         lay.addWidget(self._btn)
+        lay.addWidget(self._update_btn)
 
         outer.addWidget(card)
+
+    def _open_update_dialog(self) -> None:
+        dlg = DbUpdateDialog(self)
+        dlg.exec()

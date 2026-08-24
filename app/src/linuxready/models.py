@@ -34,6 +34,14 @@ class CollectorResult:
 
 
 @dataclass
+class DistroRec:
+    name: str
+    tagline: str
+    reasons: list[str]
+    url: str
+
+
+@dataclass
 class ScanContext:
     db_path: str
     timeout_default: int = 30
@@ -51,3 +59,4 @@ class ScanResult:
     collectors: list[dict[str, Any]]
     items: list[ScanItem]
     score: dict[str, Any]
+    distro_recs: list[DistroRec] = field(default_factory=list)

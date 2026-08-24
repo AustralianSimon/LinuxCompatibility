@@ -43,10 +43,11 @@ def render_report(result: ScanResult) -> str:
 
     tmpl = env.get_template("report.html.j2")
     return tmpl.render(
-        result=result,
-        blockers  = [i for i in result.items if i.is_blocker],
-        apps      = [i for i in result.items if i.source == "registry_apps"],
-        games     = [i for i in result.items if i.source == "steam"],
-        hardware  = [i for i in result.items if i.source in ("hardware", "firmware")],
-        unknowns  = [i for i in result.items if i.verdict == "unknown"],
+        result      = result,
+        distro_recs = result.distro_recs,
+        blockers    = [i for i in result.items if i.is_blocker],
+        apps        = [i for i in result.items if i.source in ("registry_apps", "msix")],
+        games       = [i for i in result.items if i.source in ("steam", "epic", "gog")],
+        hardware    = [i for i in result.items if i.source in ("hardware", "firmware")],
+        unknowns    = [i for i in result.items if i.verdict == "unknown"],
     )

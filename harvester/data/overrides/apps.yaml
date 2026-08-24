@@ -78,6 +78,103 @@ apps:
       - office 365
       - ms office
 
+  - app_id: adobe.illustrator
+    name: Adobe Illustrator
+    publisher: Adobe
+    category: creative
+    verdict: replace
+    confidence: high
+    linux_native: 0
+    notes: No Linux version. Inkscape is the closest open-source vector editor.
+    aliases:
+      - adobe illustrator
+      - illustrator
+    alternatives:
+      - alt_app_id: inkscape.inkscape
+        alt_name: Inkscape
+        rank: 1
+        rationale: Full-featured open-source SVG/vector editor
+        caveat: No CMYK; different UX from Illustrator
+
+  - app_id: malwarebytes.mb
+    name: Malwarebytes
+    publisher: Malwarebytes
+    category: security
+    verdict: replace
+    confidence: high
+    linux_native: 0
+    notes: No Linux version. Linux has a fundamentally different security model; traditional AV is rarely needed.
+    aliases:
+      - malwarebytes
+    alternatives:
+      - alt_app_id: clamav.clamav
+        alt_name: ClamAV
+        rank: 1
+        rationale: Open-source antivirus, available in all major distro repos
+        caveat: Command-line focused; use ClamTk for a GUI front-end
+
+  - app_id: google.chrome
+    name: Google Chrome
+    publisher: Google
+    category: utility
+    verdict: native
+    confidence: high
+    linux_native: 1
+    notes: Official .deb and .rpm packages available from Google. Also on Flathub.
+    aliases:
+      - google chrome
+      - chrome
+    packages:
+      - ecosystem: flatpak
+        package_id: com.google.Chrome
+        is_official: 0
+        install_hint: "flatpak install flathub com.google.Chrome"
+      - ecosystem: apt
+        package_id: google-chrome-stable
+        is_official: 1
+        install_hint: "Download .deb from google.com/chrome"
+
+  - app_id: mozilla.firefox
+    name: Firefox
+    publisher: Mozilla
+    category: utility
+    verdict: native
+    confidence: high
+    linux_native: 1
+    notes: Available as Flatpak, .deb, .rpm, and snap — works on all major distros.
+    aliases:
+      - firefox
+      - mozilla firefox
+    packages:
+      - ecosystem: flatpak
+        package_id: org.mozilla.firefox
+        is_official: 1
+        install_hint: "flatpak install flathub org.mozilla.firefox"
+      - ecosystem: apt
+        package_id: firefox
+        is_official: 1
+        install_hint: "sudo apt install firefox"
+
+  - app_id: discord.discord
+    name: Discord
+    publisher: Discord
+    category: utility
+    verdict: native
+    confidence: high
+    linux_native: 1
+    notes: Flatpak and official .deb available.
+    aliases:
+      - discord
+    packages:
+      - ecosystem: flatpak
+        package_id: com.discordapp.Discord
+        is_official: 0
+        install_hint: "flatpak install flathub com.discordapp.Discord"
+      - ecosystem: apt
+        package_id: discord
+        is_official: 0
+        install_hint: "Download .deb from discord.com/download"
+
   - app_id: valve.steam
     name: Steam
     publisher: Valve
@@ -88,3 +185,12 @@ apps:
     notes: Steam has a first-class Linux client. Most games launch via Proton automatically.
     aliases:
       - steam
+    packages:
+      - ecosystem: apt
+        package_id: steam-installer
+        is_official: 1
+        install_hint: "sudo apt install steam-installer"
+      - ecosystem: flatpak
+        package_id: com.valvesoftware.Steam
+        is_official: 1
+        install_hint: "flatpak install flathub com.valvesoftware.Steam"

@@ -9,13 +9,18 @@ from pathlib import Path
 
 from . import __version__
 from .config import APP_NAME, DB_PATH, SCANS_DIR, SCHEMA_VERSION
+from .collectors.epic import EpicCollector
+from .collectors.gog import GogCollector
 from .collectors.hardware import HardwareCollector
+from .collectors.msix import MsixCollector
 from .collectors.registry_apps import RegistryAppsCollector
 from .collectors.steam import SteamCollector
+from .collectors.xbox import XboxCollector
 from .db.access import get_meta, open_db
 from .matcher.resolver import resolve
 from .models import ScanContext, ScanResult
 from .report.render import render_report
+from .verdict.distro import recommend_distros
 from .verdict.rules import assign_verdict
 from .verdict.score import compute_score
 
@@ -29,7 +34,10 @@ def run_scan(db_path: Path | None = None,
     db_path = db_path or DB_PATH
     ctx = ScanContext(db_path=str(db_path))
 
-    collectors = [SteamCollector(), RegistryAppsCollector(), HardwareCollector()]
+    collectors = [
+        SteamCollector(), EpicCollector(), GogCollector(), XboxCollector(),
+        RegistryAppsCollector(), MsixCollector(), HardwareCollector(),
+    ]
     all_raw_items = []
     collector_summaries = []
 
@@ -64,6 +72,7 @@ def run_scan(db_path: Path | None = None,
             scan_items.append(verdicted)
 
     score = compute_score(scan_items)
+    distro_recs = recommend_distros(scan_items)
 
     return ScanResult(
         schema_version=SCHEMA_VERSION,
@@ -75,6 +84,7 @@ def run_scan(db_path: Path | None = None,
         collectors=collector_summaries,
         items=scan_items,
         score=score,
+        distro_recs=distro_recs,
     )
 
 

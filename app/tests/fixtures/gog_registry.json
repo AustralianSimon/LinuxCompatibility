@@ -1,0 +1,25 @@
+[
+  {
+    "GAMENAME": "The Witcher 3: Wild Hunt",
+    "productid": "1207664643",
+    "publisher": "CD PROJEKT RED"
+  },
+  {
+    "GAMENAME": "Cyberpunk 2077",
+    "productid": "1423049311",
+    "publisher": "CD PROJEKT RED"
+  },
+  {
+    "GAMENAME": "Baldur's Gate 3",
+    "productid": "1456460669",
+    "publisher": "Larian Studios"
+  },
+  {
+    "GAMENAME": "",
+    "productid": "9999999999",
+    "publisher": "Some Corp"
+  },
+  {
+    "productid": "8888888888"
+  }
+]

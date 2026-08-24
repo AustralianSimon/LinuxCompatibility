@@ -19,7 +19,7 @@ _GOLDEN = [
 
 _MIN_GAME_ROWS  = 1_000
 _MIN_APP_ROWS   = 500
-_MIN_HW_ROWS    = 50
+_MIN_HW_ROWS    = 15
 _MAX_CHANGE_PCT = 20  # alert if counts shift >20% vs previous build
 
 

@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (QFileDialog, QHBoxLayout, QLabel, QPushButton,
                                 QTabWidget, QVBoxLayout, QWidget, QScrollArea,
                                 QFrame, QSizePolicy)
 
+from ...matcher.resolver import bad_match_url
 from ...models import ScanResult, ScanItem
 from ...report.render import render_report
 
@@ -67,6 +68,11 @@ class ResultsView(QWidget):
         outer.addWidget(self._score_banner)
         outer.addSpacing(12)
 
+        # ── Distro recommendations ──
+        self._distro_panel = _DistroPanel()
+        outer.addWidget(self._distro_panel)
+        outer.addSpacing(8)
+
         # ── Tabs ──
         self._tabs = QTabWidget()
         self._tab_blockers = _ItemListTab()
@@ -83,16 +89,18 @@ class ResultsView(QWidget):
         self._result = result
         score = result.score
         self._score_banner.update(score["value"], score["hard_blockers"], score["unknown_count"])
+        self._distro_panel.load(result.distro_recs)
 
         blockers  = [i for i in result.items if i.is_blocker]
-        games     = [i for i in result.items if i.source == "steam"]
-        apps      = [i for i in result.items if i.source == "registry_apps"]
+        games     = [i for i in result.items if i.source in ("steam", "epic", "gog")]
+        apps      = [i for i in result.items if i.source in ("registry_apps", "msix")]
         hardware  = [i for i in result.items if i.source in ("hardware", "firmware")]
 
-        self._tab_blockers.load(blockers)
-        self._tab_games.load(games)
-        self._tab_apps.load(apps)
-        self._tab_hardware.load(hardware)
+        db_build = result.db_build
+        self._tab_blockers.load(blockers, db_build)
+        self._tab_games.load(games, db_build)
+        self._tab_apps.load(apps, db_build)
+        self._tab_hardware.load(hardware, db_build)
 
         self._tabs.setTabText(0, f"Blockers ({len(blockers)})")
         self._tabs.setTabText(1, f"Games ({len(games)})")
@@ -165,7 +173,7 @@ class _ItemListTab(QScrollArea):
         self._lay.setSpacing(4)
         self.setWidget(self._container)
 
-    def load(self, items: list[ScanItem]) -> None:
+    def load(self, items: list[ScanItem], db_build: str = "") -> None:
         while self._lay.count():
             child = self._lay.takeAt(0)
             if child.widget():
@@ -173,7 +181,7 @@ class _ItemListTab(QScrollArea):
 
         sorted_items = sorted(items, key=lambda i: (not i.is_blocker, i.verdict or ""))
         for item in sorted_items:
-            self._lay.addWidget(_ItemRow(item))
+            self._lay.addWidget(_ItemRow(item, db_build))
         if not items:
             placeholder = QLabel("No items")
             placeholder.setStyleSheet("color: #666; font-size: 13px; padding: 20px;")
@@ -182,7 +190,7 @@ class _ItemListTab(QScrollArea):
 
 
 class _ItemRow(QFrame):
-    def __init__(self, item: ScanItem):
+    def __init__(self, item: ScanItem, db_build: str = ""):
         super().__init__()
         border_color = "#ef476f" if item.is_blocker else "#2a2a4a"
         self.setStyleSheet(
@@ -213,3 +221,88 @@ class _ItemRow(QFrame):
             ev.setStyleSheet("font-size: 11px; color: #a0a0b0;")
             ev.setWordWrap(True)
             lay.addWidget(ev)
+
+        if item.source != "firmware":
+            bottom = QHBoxLayout()
+            bottom.addStretch()
+            report_link = QPushButton("Report wrong match")
+            report_link.setStyleSheet(
+                "QPushButton { color: #555; font-size: 10px; border: none; "
+                "background: none; padding: 0; text-decoration: underline; cursor: pointer; }"
+                "QPushButton:hover { color: #00b4d8; }"
+            )
+            report_link.setCursor(Qt.PointingHandCursor)
+            url = bad_match_url(item, db_build)
+            report_link.clicked.connect(lambda: webbrowser.open(url))
+            bottom.addWidget(report_link)
+            lay.addLayout(bottom)
+
+
+class _DistroPanel(QFrame):
+    def __init__(self):
+        super().__init__()
+        self.setStyleSheet("QFrame { background: transparent; }")
+        self._lay = QHBoxLayout(self)
+        self._lay.setContentsMargins(0, 0, 0, 0)
+        self._lay.setSpacing(10)
+
+    def load(self, recs) -> None:
+        while self._lay.count():
+            child = self._lay.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+
+        if not recs:
+            self.hide()
+            return
+
+        self.show()
+        for i, rec in enumerate(recs):
+            self._lay.addWidget(_DistroCard(rec, top=(i == 0)))
+        self._lay.addStretch()
+
+
+class _DistroCard(QFrame):
+    def __init__(self, rec, top: bool = False):
+        super().__init__()
+        border = "#00b4d8" if top else "#2a2a4a"
+        self.setStyleSheet(
+            f"QFrame {{ background: #16213e; border: 1px solid {border}; "
+            "border-radius: 8px; padding: 2px; }}"
+        )
+        self.setFixedWidth(240)
+
+        lay = QVBoxLayout(self)
+        lay.setContentsMargins(14, 12, 14, 12)
+        lay.setSpacing(4)
+
+        header = QHBoxLayout()
+        name = QLabel(f"{'★ ' if top else ''}{rec.name}")
+        name.setStyleSheet("font-weight: 700; font-size: 13px; color: #00b4d8;")
+        header.addWidget(name)
+        header.addStretch()
+        lay.addLayout(header)
+
+        tagline = QLabel(rec.tagline)
+        tagline.setStyleSheet("font-size: 10px; color: #a0a0b0;")
+        tagline.setWordWrap(True)
+        lay.addWidget(tagline)
+
+        if rec.reasons:
+            lay.addSpacing(4)
+            for reason in rec.reasons[:2]:
+                bullet = QLabel(f"· {reason}")
+                bullet.setStyleSheet("font-size: 10px; color: #c0c0d0;")
+                bullet.setWordWrap(True)
+                lay.addWidget(bullet)
+
+        lay.addSpacing(6)
+        link_btn = QPushButton("Visit website →")
+        link_btn.setStyleSheet(
+            "QPushButton { color: #0077b6; font-size: 10px; border: none; "
+            "background: none; padding: 0; text-align: left; }"
+            "QPushButton:hover { color: #00b4d8; }"
+        )
+        link_btn.setCursor(Qt.PointingHandCursor)
+        link_btn.clicked.connect(lambda: webbrowser.open(rec.url))
+        lay.addWidget(link_btn)

@@ -24,7 +24,7 @@ def _conn():
 def _game(appid: int, name: str = "Test") -> ScanItem:
     return ScanItem(source="steam", raw_name=name,
                     raw_keys={"steam_appid": appid},
-                    matched_id=f"steam:{appid}", match_tier=1, match_confidence="exact")
+                    matched_id=str(appid), match_tier=1, match_confidence="exact")
 
 
 def _app(app_id: str, name: str = "Test") -> ScanItem:

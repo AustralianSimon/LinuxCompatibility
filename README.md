@@ -22,15 +22,24 @@ uv venv
 uv pip install -e ".[dev]"
 ```
 
-### Generate the compatibility database
+### Get the compatibility database
 
-The app ships with a seed database for development. Generate it before first run:
+**Option A — download the pre-built DB** (recommended):
 
 ```powershell
+python scripts/download_db.py
+```
+
+Downloads the latest `compat.db` from GitHub Releases into the right place automatically.
+
+**Option B — generate the seed DB** (dev/offline):
+
+```powershell
+cd app
 .venv\Scripts\python.exe -m linuxready.db.seed
 ```
 
-This writes `app/src/linuxready/db/compat.db`. In a production build, this file is bundled in the installer and updated separately via the harvester.
+This writes a minimal `compat.db` covering ~12 games and ~20 apps — enough for development and testing, but most real apps and hardware will show as "unknown".
 
 ### Run
 
