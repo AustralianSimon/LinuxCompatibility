@@ -3,5 +3,13 @@
   "BitLocker": "Off",
   "StorageMode": "AHCI",
   "DiskStyle": "GPT",
-  "FreeGB": 250.5
+  "FreeGB": 250.5,
+  "DiskTotalGB": 1000.0,
+  "UnallocatedGB": 99.0,
+  "Partitions": [
+    {"SizeGB": 0.1, "Type": "System",   "DriveLetter": null, "FreeGB": null},
+    {"SizeGB": 0.1, "Type": "Reserved", "DriveLetter": null, "FreeGB": null},
+    {"SizeGB": 900.0, "Type": "Basic",  "DriveLetter": "C",  "FreeGB": 250.5},
+    {"SizeGB": 0.8, "Type": "Recovery", "DriveLetter": null, "FreeGB": null}
+  ]
 }

@@ -122,11 +122,22 @@ def parse_hardware_data(hw: dict, fw: dict) -> tuple[list[RawItem], list[str]]:
         source="firmware",
         raw_name="Firmware / boot configuration",
         raw_keys={
-            "secure_boot": fw.get("SecureBoot"),
-            "bitlocker":   fw.get("BitLocker"),
-            "storage_mode":fw.get("StorageMode"),
-            "disk_style":  fw.get("DiskStyle"),
-            "free_gb":     fw.get("FreeGB"),
+            "secure_boot":    fw.get("SecureBoot"),
+            "bitlocker":      fw.get("BitLocker"),
+            "storage_mode":   fw.get("StorageMode"),
+            "disk_style":     fw.get("DiskStyle"),
+            "free_gb":        fw.get("FreeGB"),
+            "disk_total_gb":  fw.get("DiskTotalGB"),
+            "unallocated_gb": fw.get("UnallocatedGB"),
+            "partitions": [
+                {
+                    "size_gb":      p.get("SizeGB"),
+                    "type":         p.get("Type"),
+                    "drive_letter": p.get("DriveLetter"),
+                    "free_gb":      p.get("FreeGB"),
+                }
+                for p in (fw.get("Partitions") or [])
+            ],
         },
     ))
 

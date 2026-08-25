@@ -15,10 +15,13 @@ from .collectors.hardware import HardwareCollector
 from .collectors.msix import MsixCollector
 from .collectors.registry_apps import RegistryAppsCollector
 from .collectors.steam import SteamCollector
+from .collectors.userdata import UserdataCollector
 from .collectors.xbox import XboxCollector
 from .db.access import get_meta, open_db
 from .matcher.resolver import resolve
 from .models import ScanContext, ScanResult
+from .overrides import apply_user_overrides, load_user_overrides
+from .report.install_script import generate_install_script
 from .report.render import render_report
 from .verdict.distro import recommend_distros
 from .verdict.rules import assign_verdict
@@ -37,8 +40,10 @@ def run_scan(db_path: Path | None = None,
     collectors = [
         SteamCollector(), EpicCollector(), GogCollector(), XboxCollector(),
         RegistryAppsCollector(), MsixCollector(), HardwareCollector(),
+        UserdataCollector(),
     ]
     all_raw_items = []
+    all_migration = []
     collector_summaries = []
 
     for c in collectors:
@@ -60,9 +65,11 @@ def run_scan(db_path: Path | None = None,
             "warnings": result.warnings,
         })
         all_raw_items.extend(result.items)
+        all_migration.extend(result.migration)
         if progress_cb:
             progress_cb(c.id, result.status)
 
+    user_overrides = load_user_overrides()
     with open_db(db_path) as conn:
         db_build = get_meta(conn, "build_date") or "unknown"
         scan_items = []
@@ -70,6 +77,7 @@ def run_scan(db_path: Path | None = None,
             matched  = resolve(raw, conn)
             verdicted = assign_verdict(matched, conn)
             scan_items.append(verdicted)
+    apply_user_overrides(scan_items, user_overrides)
 
     score = compute_score(scan_items)
     distro_recs = recommend_distros(scan_items)
@@ -85,6 +93,7 @@ def run_scan(db_path: Path | None = None,
         items=scan_items,
         score=score,
         distro_recs=distro_recs,
+        migration=all_migration,
     )
 
 
@@ -116,6 +125,7 @@ def main() -> None:
     parser.add_argument("--db",     metavar="PATH", help="Path to compat.db")
     parser.add_argument("--report", metavar="FILE", help="Write HTML report to FILE")
     parser.add_argument("--json",   metavar="FILE", help="Write JSON scan to FILE")
+    parser.add_argument("--script", metavar="FILE", help="Write post-install bash script to FILE")
     parser.add_argument("--gui",    action="store_true", help="Launch the GUI")
     args = parser.parse_args()
 
@@ -154,6 +164,11 @@ def main() -> None:
         json_path = Path(args.json)
         _save_json(result, json_path)
         print(f"JSON            : {json_path}")
+
+    if args.script:
+        script_path = Path(args.script)
+        script_path.write_text(generate_install_script(result), encoding="utf-8")
+        print(f"Install script  : {script_path}")
 
 
 if __name__ == "__main__":

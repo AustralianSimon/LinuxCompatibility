@@ -25,12 +25,23 @@ class ScanItem:
 
 
 @dataclass
+class MigrationItem:
+    category: str   # documents | browser | mail
+    name: str
+    path: str
+    size_gb: float
+    note: str
+    found: bool = True
+
+
+@dataclass
 class CollectorResult:
     id: str
     status: str  # ok | partial | failed | skipped
     duration_ms: int
     warnings: list[str] = field(default_factory=list)
     items: list[RawItem] = field(default_factory=list)
+    migration: list[MigrationItem] = field(default_factory=list)
 
 
 @dataclass
@@ -60,3 +71,4 @@ class ScanResult:
     items: list[ScanItem]
     score: dict[str, Any]
     distro_recs: list[DistroRec] = field(default_factory=list)
+    migration: list[MigrationItem] = field(default_factory=list)

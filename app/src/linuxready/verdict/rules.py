@@ -179,6 +179,10 @@ def _hardware_verdict(item: ScanItem, conn: sqlite3.Connection) -> None:
         item.verdict = "layer_workable"  # map to user-visible verdict
 
 
+_LINUX_MIN_GB = 30.0
+_MBR_PRIMARY_TYPES = frozenset({"Basic", "System", "Recovery", "Reserved"})
+
+
 def _firmware_verdict(item: ScanItem) -> None:
     keys = item.raw_keys
     item.verdict = "native"  # default — no match needed, assessed directly
@@ -206,11 +210,86 @@ def _firmware_verdict(item: ScanItem) -> None:
             "GPT is strongly preferred for dual-boot."
         )
 
-    free_gb = keys.get("free_gb")
-    if free_gb is not None and free_gb < 30:
+    partitions = keys.get("partitions") or []
+    if partitions:
+        _dualboot_feasibility(item, keys, disk_style, partitions)
+    else:
+        # Legacy path: no partition data collected — fall back to raw C: free space
+        free_gb = keys.get("free_gb")
+        if free_gb is not None and free_gb < _LINUX_MIN_GB:
+            item.verdict = "blocked"
+            item.is_blocker = True
+            item.evidence.append(
+                f"Only {free_gb:.1f} GB free on system drive — "
+                "Linux requires at least 25–30 GB for a usable installation."
+            )
+
+
+def _dualboot_feasibility(
+    item: ScanItem,
+    keys: dict,
+    disk_style: str,
+    partitions: list,
+) -> None:
+    if item.verdict == "blocked":
+        return  # RST/RAID already blocked; no point analysing further
+
+    # MBR hard limit: max 4 primary partitions
+    if disk_style == "MBR":
+        primary_count = sum(1 for p in partitions if p.get("type") in _MBR_PRIMARY_TYPES)
+        if primary_count >= 4:
+            item.verdict = "blocked"
+            item.is_blocker = True
+            item.evidence.append(
+                f"MBR disk already has {primary_count} primary partitions — no room to add Linux. "
+                "Run 'mbr2gpt /convert' from an elevated command prompt to convert to GPT first."
+            )
+            return
+
+    unallocated = float(keys.get("unallocated_gb") or 0)
+
+    if unallocated >= _LINUX_MIN_GB:
+        item.evidence.append(
+            f"Dual-boot: {unallocated:.0f} GB unallocated space on disk — "
+            "the Linux installer can use this directly, no shrinking needed."
+        )
+        return
+
+    # Find the Basic partition with the most free space to donate
+    basic = [p for p in partitions if p.get("type") == "Basic" and p.get("free_gb") is not None]
+    if basic:
+        best = max(basic, key=lambda p: float(p.get("free_gb") or 0))
+        free = float(best.get("free_gb") or 0)
+        letter = best.get("drive_letter") or "?"
+        avail = free + unallocated
+
+        if free >= _LINUX_MIN_GB + 20:
+            item.evidence.append(
+                f"Dual-boot: {letter}: has {free:.0f} GB free — shrink it in Disk Management "
+                "to create space for a Linux partition."
+            )
+            item.actions.append(
+                f"Open Disk Management (diskmgmt.msc), right-click {letter}: › Shrink Volume, "
+                "enter at least 30720 MB (30 GB)."
+            )
+        elif avail >= _LINUX_MIN_GB:
+            item.evidence.append(
+                f"Dual-boot tight — {letter}: has {free:.0f} GB free "
+                f"(+ {unallocated:.0f} GB unallocated). "
+                f"Shrinking {letter}: is possible but leaves little headroom for Windows."
+            )
+        else:
+            item.verdict = "blocked"
+            item.is_blocker = True
+            item.evidence.append(
+                f"Dual-boot: not enough free space — {letter}: has only {free:.0f} GB free "
+                f"(+ {unallocated:.0f} GB unallocated); need at least {_LINUX_MIN_GB:.0f} GB. "
+                "Consider adding a second drive for Linux."
+            )
+    elif unallocated < _LINUX_MIN_GB:
         item.verdict = "blocked"
         item.is_blocker = True
         item.evidence.append(
-            f"Only {free_gb:.1f} GB free on system drive — "
-            "Linux requires at least 25–30 GB for a usable installation."
+            f"Dual-boot: only {unallocated:.0f} GB unallocated and no resizable Basic partitions. "
+            "Consider adding a second drive for Linux."
         )

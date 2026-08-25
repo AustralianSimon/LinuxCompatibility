@@ -97,6 +97,84 @@ def test_low_disk_space_is_blocker():
     assert item.is_blocker
 
 
+def _fw(extra: dict) -> ScanItem:
+    base = {
+        "storage_mode": "AHCI",
+        "bitlocker": "Off",
+        "disk_style": "GPT",
+        "free_gb": 200.0,
+    }
+    base.update(extra)
+    return ScanItem(source="firmware", raw_name="Firmware", raw_keys=base)
+
+
+# ── dual-boot feasibility ─────────────────────────────────────────────────
+
+def test_unallocated_space_noted():
+    conn = _conn()
+    item = _fw({"unallocated_gb": 100.0,
+                "partitions": [{"size_gb": 900.0, "type": "Basic",
+                                "drive_letter": "C", "free_gb": 200.0}]})
+    assign_verdict(item, conn)
+    conn.close()
+    assert item.verdict == "native"
+    assert any("unallocated" in e.lower() for e in item.evidence)
+
+
+def test_shrinkable_partition_noted_and_action_added():
+    conn = _conn()
+    item = _fw({"unallocated_gb": 0.0,
+                "partitions": [{"size_gb": 900.0, "type": "Basic",
+                                "drive_letter": "C", "free_gb": 200.0}]})
+    assign_verdict(item, conn)
+    conn.close()
+    assert item.verdict == "native"
+    assert any("shrink" in e.lower() for e in item.evidence)
+    assert item.actions  # should recommend Disk Management action
+
+
+def test_tight_dual_boot_is_not_blocked():
+    conn = _conn()
+    item = _fw({"unallocated_gb": 5.0,
+                "partitions": [{"size_gb": 50.0, "type": "Basic",
+                                "drive_letter": "C", "free_gb": 35.0}]})
+    assign_verdict(item, conn)
+    conn.close()
+    assert item.verdict == "native"
+    assert any("tight" in e.lower() for e in item.evidence)
+
+
+def test_no_free_space_is_blocker():
+    conn = _conn()
+    item = _fw({"unallocated_gb": 0.0,
+                "partitions": [{"size_gb": 50.0, "type": "Basic",
+                                "drive_letter": "C", "free_gb": 5.0}]})
+    assign_verdict(item, conn)
+    conn.close()
+    assert item.verdict == "blocked"
+    assert item.is_blocker
+
+
+def test_mbr_four_primaries_is_blocker():
+    conn = _conn()
+    item = ScanItem(source="firmware", raw_name="Firmware", raw_keys={
+        "storage_mode": "AHCI", "bitlocker": "Off",
+        "disk_style": "MBR", "free_gb": 200.0,
+        "unallocated_gb": 50.0,
+        "partitions": [
+            {"size_gb": 100.0, "type": "System",   "drive_letter": None,  "free_gb": None},
+            {"size_gb": 400.0, "type": "Basic",    "drive_letter": "C",   "free_gb": 200.0},
+            {"size_gb": 200.0, "type": "Basic",    "drive_letter": "D",   "free_gb": 100.0},
+            {"size_gb": 50.0,  "type": "Recovery", "drive_letter": None,  "free_gb": None},
+        ],
+    })
+    assign_verdict(item, conn)
+    conn.close()
+    assert item.verdict == "blocked"
+    assert item.is_blocker
+    assert any("4" in e for e in item.evidence)
+
+
 # ── score ─────────────────────────────────────────────────────────────────
 
 def test_score_all_native():

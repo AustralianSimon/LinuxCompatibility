@@ -100,6 +100,15 @@ tr.is-blocker td { background: rgba(239,71,111,.06); }
           padding: 12px 16px; margin: 16px 0; font-size: 0.86rem; color: var(--text2); }
 .notice strong { color: var(--accent); }
 
+/* ── Migration sizing ── */
+.mig-total { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius);
+             padding: 16px 20px; margin-bottom: 18px; display: flex; gap: 24px; flex-wrap: wrap; }
+.mig-total .n { font-size: 2rem; font-weight: 700; color: var(--accent); line-height: 1; }
+.mig-total .l { font-size: 0.82rem; color: var(--text2); margin-top: 2px; }
+.mig-section { margin-bottom: 10px; }
+.mig-label  { font-size: 0.72rem; font-weight: 700; letter-spacing: .08em;
+               text-transform: uppercase; color: var(--text2); margin: 18px 0 6px; }
+
 /* ── Footer ── */
 footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border);
          font-size: 0.78rem; color: var(--text2); text-align: center; line-height: 1.8; }
@@ -270,6 +279,45 @@ footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border
     </tbody>
   </table>
   </div>
+  {% endif %}
+
+  <!-- ── Migration sizing ── -->
+  {% if migration %}
+  <h2>Data migration sizing ({{ migration_total }} GB total)</h2>
+  <div class="mig-total">
+    <div>
+      <div class="n">{{ migration_total }} GB</div>
+      <div class="l">Total data to migrate</div>
+    </div>
+    <div>
+      <div class="n">{{ migration | length }}</div>
+      <div class="l">Location{{ 's' if migration | length != 1 }}</div>
+    </div>
+  </div>
+  {% for category, label in [('documents','User folders'),('browser','Browsers'),('mail','Mail')] %}
+  {% set cat_items = migration | selectattr('category','equalto',category) | list %}
+  {% if cat_items %}
+  <div class="mig-label">{{ label }}</div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Location</th><th>Size</th><th>Migration notes</th></tr></thead>
+    <tbody>
+    {% for item in cat_items %}
+    <tr>
+      <td><strong>{{ item.name }}</strong><br>
+          <span style="color:var(--text2);font-size:.75rem">{{ item.path }}</span></td>
+      <td style="white-space:nowrap;font-weight:600;
+          color:{% if item.size_gb > 10 %}var(--partial){% else %}var(--pass){% endif %}">
+        {{ "%.1f"|format(item.size_gb) }} GB
+      </td>
+      <td style="font-size:.85rem;color:var(--text2)">{{ item.note }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
+  {% endfor %}
   {% endif %}
 
   <!-- ── Unknowns ── -->

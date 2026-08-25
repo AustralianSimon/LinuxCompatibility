@@ -42,12 +42,15 @@ def render_report(result: ScanResult) -> str:
     env.globals["verdict_css"]   = lambda v: _VERDICT_CSS.get(v or "unknown", "v-unknown")
 
     tmpl = env.get_template("report.html.j2")
+    migration_found = [m for m in result.migration if m.found]
     return tmpl.render(
-        result      = result,
-        distro_recs = result.distro_recs,
-        blockers    = [i for i in result.items if i.is_blocker],
-        apps        = [i for i in result.items if i.source in ("registry_apps", "msix")],
-        games       = [i for i in result.items if i.source in ("steam", "epic", "gog")],
-        hardware    = [i for i in result.items if i.source in ("hardware", "firmware")],
-        unknowns    = [i for i in result.items if i.verdict == "unknown"],
+        result          = result,
+        distro_recs     = result.distro_recs,
+        blockers        = [i for i in result.items if i.is_blocker],
+        apps            = [i for i in result.items if i.source in ("registry_apps", "msix")],
+        games           = [i for i in result.items if i.source in ("steam", "epic", "gog")],
+        hardware        = [i for i in result.items if i.source in ("hardware", "firmware")],
+        unknowns        = [i for i in result.items if i.verdict == "unknown"],
+        migration       = migration_found,
+        migration_total = round(sum(m.size_gb for m in migration_found), 1),
     )
