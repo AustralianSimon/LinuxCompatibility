@@ -2,7 +2,7 @@ import sqlite3
 
 from ..models import ScanItem
 
-_ANTICHEAT_BLOCKED = frozenset({"kernel_blocked"})
+_ANTICHEAT_BLOCKED = frozenset({"kernel_blocked", "denied", "broken"})
 _PROTON_EXCELLENT  = frozenset({"platinum", "gold"})
 _PROTON_WORKABLE   = frozenset({"silver"})
 _PROTON_POOR       = frozenset({"bronze"})
@@ -18,21 +18,23 @@ _SUPPORT_TO_VERDICT = {
 
 def assign_verdict(item: ScanItem, conn: sqlite3.Connection) -> ScanItem:
     """Populate verdict, is_blocker, evidence, and actions on item. Returns item."""
-    # Firmware is assessed directly from raw_keys — no DB match needed.
+    # Firmware and hardware are assessed from raw_keys — no name match needed.
     if item.source == "firmware":
         _firmware_verdict(item)
+        return item
+
+    if item.source == "hardware":
+        _hardware_verdict(item, conn)
         return item
 
     if item.matched_id is None:
         item.verdict = "unknown"
         return item
 
-    if item.source == "steam":
+    if item.source in ("steam", "epic", "gog", "xbox"):
         _game_verdict(item, conn)
-    elif item.source == "registry_apps":
+    elif item.source in ("registry_apps", "msix"):
         _app_verdict(item, conn)
-    elif item.source == "hardware":
-        _hardware_verdict(item, conn)
     else:
         item.verdict = "unknown"
 
@@ -40,7 +42,8 @@ def assign_verdict(item: ScanItem, conn: sqlite3.Connection) -> ScanItem:
 
 
 def _game_verdict(item: ScanItem, conn: sqlite3.Connection) -> None:
-    appid = item.raw_keys.get("steam_appid")
+    # matched_id is the steam_appid (as str) for all game sources
+    appid = item.matched_id
     if appid is None:
         item.verdict = "unknown"
         return
@@ -59,7 +62,12 @@ def _game_verdict(item: ScanItem, conn: sqlite3.Connection) -> None:
     if anticheat in _ANTICHEAT_BLOCKED:
         item.verdict = "blocked"
         item.is_blocker = True
-        item.evidence.append("Kernel-level anticheat blocks Linux play")
+        if anticheat == "denied":
+            item.evidence.append("Anticheat actively denies Linux (AreWeAntiCheatYet: Denied)")
+        elif anticheat == "broken":
+            item.evidence.append("Anticheat broken on Linux (AreWeAntiCheatYet: Broken)")
+        else:
+            item.evidence.append("Kernel-level anticheat blocks Linux play")
         if notes:
             item.evidence.append(notes)
         return
@@ -85,7 +93,11 @@ def _game_verdict(item: ScanItem, conn: sqlite3.Connection) -> None:
         item.evidence.append(f"ProtonDB: {proton_tier.capitalize()}{sample_note}")
     if deck:
         item.evidence.append(f"Steam Deck: {deck}")
-    if anticheat and anticheat != "none":
+    if anticheat == "supported":
+        item.evidence.append("Anticheat: Linux officially supported (AreWeAntiCheatYet)")
+    elif anticheat == "running":
+        item.evidence.append("Anticheat: reported working, not officially supported")
+    elif anticheat and anticheat not in ("none", "unknown"):
         item.evidence.append(f"Anticheat: {anticheat.replace('_', ' ')}")
     if notes:
         item.evidence.append(notes)

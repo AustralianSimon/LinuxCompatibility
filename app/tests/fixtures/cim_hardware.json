@@ -25,6 +25,11 @@
       "PNPDeviceID": "PCI\\VEN_8086&DEV_2725&SUBSYS_00248086&REV_1A\\4&2B3C4D&0&00E0"
     }
   ],
+  "Printers": [
+    { "Name": "HP LaserJet Pro M404n", "PortName": "USB001", "DriverName": "HP LaserJet Pro M404n" },
+    { "Name": "Canon PIXMA TS9120", "PortName": "IP_192.168.1.50", "DriverName": "Canon PIXMA TS9120" },
+    { "Name": "Microsoft Print to PDF", "PortName": "PORTPROMPT:", "DriverName": "Microsoft Print To PDF" }
+  ],
   "System": {
     "Manufacturer": "ASUSTeK COMPUTER INC.",
     "Model": "ROG STRIX Z790-E GAMING WIFI",

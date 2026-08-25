@@ -33,11 +33,18 @@ $system = @{
     RamGB        = $ram
 }
 
+$printers = @(
+    Get-WmiObject Win32_Printer -ErrorAction SilentlyContinue | ForEach-Object {
+        @{ Name = $_.Name; PortName = $_.PortName; DriverName = $_.DriverName }
+    }
+)
+
 $out = @{
     GPUs           = $gpus
     PnPDevices     = $pnpDevices
     NetworkAdapters= $networkAdapters
     System         = $system
+    Printers       = $printers
 }
 
 ConvertTo-Json -InputObject $out -Depth 4 -Compress

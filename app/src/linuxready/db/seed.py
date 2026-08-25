@@ -6,6 +6,8 @@ import sqlite3
 import sys
 from pathlib import Path
 
+from ..matcher.normalize import normalize
+
 SCHEMA = Path(__file__).parent / "schema.sql"
 
 
@@ -42,6 +44,12 @@ def create_seed_db(output: Path) -> None:
     conn.executemany(
         "INSERT INTO game VALUES (?,?,?,?,?,?,?,?,date('now'))",
         games,
+    )
+
+    conn.executemany(
+        "INSERT OR IGNORE INTO game_alias (alias_norm, steam_appid, launcher, launcher_id) "
+        "VALUES (?, ?, 'steam', ?)",
+        [(normalize(name), appid, str(appid)) for appid, name, *_ in games],
     )
 
     # fmt: off

@@ -1,0 +1,43 @@
+[
+  {
+    "DisplayName": "Hades",
+    "CatalogItemId": "b7d74be67b614c4694e315e5440e0058",
+    "CatalogNamespace": "min",
+    "AppName": "CabPatch",
+    "AppCategories": ["public", "games", "applications"]
+  },
+  {
+    "DisplayName": "Fortnite",
+    "CatalogItemId": "4fe75bbc5a674f4f9b356b5c90567da5",
+    "CatalogNamespace": "fn",
+    "AppName": "Fortnite",
+    "AppCategories": ["public", "games"]
+  },
+  {
+    "DisplayName": "Hades II",
+    "CatalogItemId": "c8e44bf12d4241f7aab7cdab3d02a4e9",
+    "CatalogNamespace": "min",
+    "AppName": "Hades2",
+    "AppCategories": ["GAMES", "applications"]
+  },
+  {
+    "DisplayName": "Epic Games Launcher",
+    "CatalogItemId": "launcherid",
+    "CatalogNamespace": "epic",
+    "AppName": "EpicGamesLauncher",
+    "AppCategories": ["applications"]
+  },
+  {
+    "DisplayName": "",
+    "CatalogItemId": "abc123",
+    "CatalogNamespace": "something",
+    "AppName": "NoDisplayName",
+    "AppCategories": ["games"]
+  },
+  {
+    "CatalogItemId": "xyz789",
+    "CatalogNamespace": "test",
+    "AppName": "MissingDisplayNameKey",
+    "AppCategories": ["games"]
+  }
+]

@@ -1,0 +1,58 @@
+name: Bad match report
+description: The app matched an installed item to the wrong entry in the compatibility database.
+title: 'Bad match: ""'
+labels: ["bad-match"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        These fields are pre-filled automatically by the app. Please describe what was wrong and what the correct match should be.
+
+  - type: input
+    id: app_id
+    attributes:
+      label: Matched to (app ID)
+      description: What the app currently matches this item to.
+      placeholder: "none"
+    validations:
+      required: true
+
+  - type: input
+    id: correct_match
+    attributes:
+      label: Should match to
+      description: The correct app ID or game name, if you know it.
+      placeholder: "e.g. adobe.photoshop or steam:570"
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: What was wrong?
+      description: Describe why this is a bad match, or why the item is missing from the database entirely.
+      placeholder: "e.g. 'Matched to Firefox but this is actually Firefox ESR, a different app'"
+    validations:
+      required: true
+
+  - type: input
+    id: match_tier
+    attributes:
+      label: Match tier
+      description: Auto-filled by the app.
+
+  - type: input
+    id: confidence
+    attributes:
+      label: Match confidence
+      description: Auto-filled by the app.
+
+  - type: input
+    id: app_version
+    attributes:
+      label: App version
+      description: Auto-filled by the app.
+
+  - type: input
+    id: db_build
+    attributes:
+      label: DB build date
+      description: Auto-filled by the app.

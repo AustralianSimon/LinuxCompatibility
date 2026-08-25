@@ -3,7 +3,7 @@ from pathlib import Path
 
 APP_NAME = "LinuxReadyAmI"
 SCHEMA_VERSION = "1.0"
-GITHUB_REPO = "linuxreadyami/linuxready"
+GITHUB_REPO = "AustralianSimon/LinuxCompatibility"
 
 _local = Path(os.environ.get("LOCALAPPDATA", Path.home() / ".local" / "share")).expanduser()
 APP_DATA_DIR = _local / "LinuxReady"
