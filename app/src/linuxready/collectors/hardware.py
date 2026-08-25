@@ -20,10 +20,37 @@ _PNP_CLASS_MAP = {
     "bluetooth":   lambda _: "bluetooth",
     "media":       lambda _: "audio",
     "hdaudio":     lambda _: "audio",
-    "printer":     lambda _: "printer",
     "scsiadapter": lambda _: "storage",
 }
 _INTERESTING_PNP_CLASSES = set(_PNP_CLASS_MAP)
+
+# Printers are collected from Win32_Printer (not PnP — USBPRINT IDs carry no VID_/DEV_).
+# Names containing these strings are virtual/software printers; skip them.
+_VIRTUAL_PRINTER_RE = re.compile(
+    r"(microsoft|onenote|adobe pdf|print to pdf|fax|xps|snagit|cutepdf|bullzip|dopdf)", re.I
+)
+
+# Printer brand name prefix → USB vendor ID for hardware-table lookup.
+_BRAND_VID: dict[str, str] = {
+    "HP":      "03F0",
+    "Canon":   "04A9",
+    "Epson":   "04B8",
+    "Brother": "04F9",
+    "Lexmark": "043D",
+    "Xerox":   "0924",
+    "Ricoh":   "05CA",
+    "Kyocera": "0482",
+    "Samsung": "04E8",
+    "Pantum":  "232B",
+}
+
+
+def _printer_brand_vid(name: str) -> str | None:
+    upper = name.upper()
+    for brand, vid in _BRAND_VID.items():
+        if upper.startswith(brand.upper()):
+            return vid
+    return None
 
 
 def _pci_ids(pnp: str) -> tuple[str | None, str | None]:
@@ -79,6 +106,16 @@ def parse_hardware_data(hw: dict, fw: dict) -> tuple[list[RawItem], list[str]]:
             source="hardware",
             raw_name=dev.get("Name", "Unknown device"),
             raw_keys={"class": hw_class, "vendor_id": ven, "device_id": device_id, "pnp": pnp},
+        ))
+
+    for printer in hw.get("Printers", []):
+        name = printer.get("Name", "")
+        if not name or _VIRTUAL_PRINTER_RE.search(name):
+            continue
+        items.append(RawItem(
+            source="hardware",
+            raw_name=name,
+            raw_keys={"class": "printer", "vendor_id": _printer_brand_vid(name), "device_id": None},
         ))
 
     items.append(RawItem(

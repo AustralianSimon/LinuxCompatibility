@@ -42,6 +42,16 @@ _KNOWN_HW: list[tuple[str, str, str, str, str]] = [
     ("144D", "storage",   "excellent",   "nvme",           "Samsung NVMe"),
     ("15B7", "storage",   "excellent",   "nvme",           "WD/SanDisk NVMe"),
     ("1987", "storage",   "excellent",   "nvme",           "Phison NVMe"),
+    # Printers (USB vendor IDs — support via CUPS/HPLIP/official drivers)
+    ("03F0", "printer",   "excellent",   "hplip",          "HP Printer"),
+    ("04F9", "printer",   "excellent",   "cups",           "Brother Printer"),
+    ("04A9", "printer",   "good",        "cups",           "Canon Printer"),
+    ("04B8", "printer",   "good",        "epson-inkjet",   "Epson Printer"),
+    ("043D", "printer",   "good",        "cups",           "Lexmark Printer"),
+    ("0924", "printer",   "good",        "cups",           "Xerox Printer"),
+    ("05CA", "printer",   "good",        "cups",           "Ricoh Printer"),
+    ("0482", "printer",   "good",        "cups",           "Kyocera Printer"),
+    ("04E8", "printer",   "needs_setup", "cups",           "Samsung Printer"),
 ]
 
 
