@@ -1,6 +1,4 @@
 import argparse
-import dataclasses
-import json
 import platform
 import sys
 import uuid
@@ -23,6 +21,7 @@ from .models import ScanContext, ScanResult
 from .overrides import apply_user_overrides, load_user_overrides
 from .report.install_script import generate_install_script
 from .report.render import render_report
+from .scan_persist import save_scan
 from .verdict.distro import recommend_distros
 from .verdict.rules import assign_verdict
 from .verdict.score import compute_score
@@ -82,7 +81,7 @@ def run_scan(db_path: Path | None = None,
     score = compute_score(scan_items)
     distro_recs = recommend_distros(scan_items)
 
-    return ScanResult(
+    result = ScanResult(
         schema_version=SCHEMA_VERSION,
         scan_id=str(uuid.uuid4()),
         scanned_at=datetime.now(timezone.utc).isoformat(),
@@ -95,6 +94,11 @@ def run_scan(db_path: Path | None = None,
         distro_recs=distro_recs,
         migration=all_migration,
     )
+    try:
+        save_scan(result)
+    except Exception:
+        pass   # never let persistence failure abort a scan
+    return result
 
 
 def _system_info() -> dict:
@@ -106,15 +110,6 @@ def _system_info() -> dict:
     }
 
 
-def _save_json(result: ScanResult, path: Path) -> None:
-    def _serial(obj):
-        if dataclasses.is_dataclass(obj):
-            return dataclasses.asdict(obj)
-        raise TypeError(type(obj))
-    path.write_text(
-        json.dumps(dataclasses.asdict(result), indent=2, default=str),
-        encoding="utf-8",
-    )
 
 
 def main() -> None:
@@ -161,8 +156,12 @@ def main() -> None:
         print(f"Report          : {report_path}")
 
     if args.json:
+        import dataclasses, json as _json
         json_path = Path(args.json)
-        _save_json(result, json_path)
+        json_path.write_text(
+            _json.dumps(dataclasses.asdict(result), indent=2, default=str),
+            encoding="utf-8",
+        )
         print(f"JSON            : {json_path}")
 
     if args.script:

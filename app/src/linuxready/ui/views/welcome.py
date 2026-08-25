@@ -8,6 +8,7 @@ from .db_update import DbUpdateDialog
 
 class WelcomeView(QWidget):
     scan_requested = Signal()
+    settings_requested = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -67,6 +68,15 @@ class WelcomeView(QWidget):
         )
         self._update_btn.clicked.connect(self._open_update_dialog)
 
+        settings_btn = QPushButton("⚙ Settings")
+        settings_btn.setFixedHeight(32)
+        settings_btn.setStyleSheet(
+            "QPushButton { background: transparent; color: #666; "
+            "font-size: 11px; border: none; }"
+            "QPushButton:hover { color: #a0a0b0; }"
+        )
+        settings_btn.clicked.connect(self.settings_requested)
+
         lay.addWidget(title)
         lay.addWidget(subtitle)
         lay.addWidget(divider)
@@ -74,6 +84,7 @@ class WelcomeView(QWidget):
         lay.addWidget(privacy)
         lay.addWidget(self._btn)
         lay.addWidget(self._update_btn)
+        lay.addWidget(settings_btn)
 
         outer.addWidget(card)
 

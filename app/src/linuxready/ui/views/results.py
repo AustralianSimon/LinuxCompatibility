@@ -3,12 +3,14 @@ import webbrowser
 from pathlib import Path
 
 from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QClipboard, QGuiApplication
 from PySide6.QtWidgets import (QComboBox, QDialog, QDialogButtonBox,
                                 QFileDialog, QFormLayout, QHBoxLayout,
                                 QLabel, QLineEdit, QMessageBox, QPushButton,
                                 QTabWidget, QVBoxLayout, QWidget, QScrollArea,
                                 QFrame, QSizePolicy)
 
+from ...config import ACCENT_COLOR
 from ...matcher.resolver import bad_match_url
 from ...models import MigrationItem, ScanResult, ScanItem
 from ...overrides import save_user_override
@@ -41,6 +43,7 @@ _VERDICT_COLOR = {
 
 class ResultsView(QWidget):
     back_requested = Signal()
+    settings_requested = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -60,13 +63,19 @@ class ResultsView(QWidget):
         self._script_btn.clicked.connect(self._export_script)
         self._open_btn = QPushButton("Open in browser")
         self._open_btn.clicked.connect(self._open_browser)
-        for btn in (self._back_btn, self._export_btn, self._script_btn, self._open_btn):
+        self._settings_btn = QPushButton("⚙")
+        self._settings_btn.setToolTip("Settings")
+        self._settings_btn.clicked.connect(self.settings_requested)
+        for btn in (self._back_btn, self._export_btn, self._script_btn,
+                    self._open_btn, self._settings_btn):
             btn.setFixedHeight(32)
+        self._settings_btn.setFixedWidth(32)
         toolbar.addWidget(self._back_btn)
         toolbar.addStretch()
         toolbar.addWidget(self._script_btn)
         toolbar.addWidget(self._export_btn)
         toolbar.addWidget(self._open_btn)
+        toolbar.addWidget(self._settings_btn)
         outer.addLayout(toolbar)
         outer.addSpacing(12)
 
@@ -249,6 +258,19 @@ class _ItemRow(QFrame):
         if item.source != "firmware":
             bottom = QHBoxLayout()
             bottom.addStretch()
+            details_btn = QPushButton("Details")
+            details_btn.setStyleSheet(
+                "QPushButton { color: #555; font-size: 10px; border: none; "
+                "background: none; padding: 0; margin-right: 12px; "
+                "text-decoration: underline; }"
+                "QPushButton:hover { color: #00b4d8; }"
+            )
+            details_btn.setCursor(Qt.PointingHandCursor)
+            details_btn.clicked.connect(
+                lambda checked=False, i=item, d=db_build:
+                    _ItemDetailDialog(i, d, details_btn.window()).exec()
+            )
+            bottom.addWidget(details_btn)
             if item.matched_id:
                 override_btn = QPushButton("Override verdict…")
                 override_btn.setStyleSheet(
@@ -423,6 +445,155 @@ class _DistroCard(QFrame):
         link_btn.setCursor(Qt.PointingHandCursor)
         link_btn.clicked.connect(lambda: webbrowser.open(rec.url))
         lay.addWidget(link_btn)
+
+
+_SOURCE_LABEL = {
+    "steam": "Steam", "epic": "Epic Games", "gog": "GOG",
+    "xbox": "Xbox/Game Pass", "registry_apps": "Installed app",
+    "msix": "Microsoft Store", "hardware": "Hardware", "firmware": "Firmware",
+}
+_TIER_LABEL = {1: "Tier 1 — exact ID", 2: "Tier 2 — curated alias",
+               3: "Tier 3 — name + publisher", 4: "Tier 4 — name unique",
+               5: "Tier 5 — fuzzy"}
+
+
+class _ItemDetailDialog(QDialog):
+    def __init__(self, item: ScanItem, db_build: str = "", parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Item detail")
+        self.setMinimumWidth(520)
+        self.setMinimumHeight(400)
+        self.resize(560, 480)
+
+        root = QVBoxLayout(self)
+        root.setSpacing(0)
+        root.setContentsMargins(0, 0, 0, 0)
+
+        # ── Header band ──
+        header = QFrame()
+        header.setStyleSheet("background: #16213e; padding: 4px;")
+        hlay = QVBoxLayout(header)
+        hlay.setContentsMargins(20, 16, 20, 14)
+        hlay.setSpacing(6)
+
+        name_row = QHBoxLayout()
+        name_lbl = QLabel(item.raw_name)
+        name_lbl.setStyleSheet("font-size: 16px; font-weight: 700;")
+        name_lbl.setWordWrap(True)
+        verdict_text = _VERDICT_LABEL.get(item.verdict or "unknown", "Unknown")
+        color = _VERDICT_COLOR.get(item.verdict or "unknown", "#888")
+        v_badge = QLabel(verdict_text)
+        v_badge.setStyleSheet(
+            f"color: {color}; font-size: 11px; font-weight: 600; "
+            f"border: 1px solid {color}; border-radius: 3px; padding: 2px 8px;"
+        )
+        v_badge.setAlignment(Qt.AlignCenter)
+        name_row.addWidget(name_lbl, 1)
+        name_row.addWidget(v_badge)
+        hlay.addLayout(name_row)
+
+        meta_parts = [_SOURCE_LABEL.get(item.source, item.source)]
+        if item.matched_id:
+            meta_parts.append(f"<b>{item.matched_id}</b>")
+        if item.match_tier:
+            meta_parts.append(_TIER_LABEL.get(item.match_tier, f"tier {item.match_tier}"))
+        if item.match_confidence:
+            meta_parts.append(f"{item.match_confidence} confidence")
+        meta = QLabel("  ·  ".join(meta_parts))
+        meta.setStyleSheet("font-size: 11px; color: #666;")
+        meta.setWordWrap(True)
+        hlay.addWidget(meta)
+
+        root.addWidget(header)
+
+        # ── Scrollable body ──
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+        body = QWidget()
+        body.setStyleSheet("background: #0f172a;")
+        blay = QVBoxLayout(body)
+        blay.setContentsMargins(20, 16, 20, 16)
+        blay.setAlignment(Qt.AlignTop)
+        blay.setSpacing(4)
+        scroll.setWidget(body)
+        root.addWidget(scroll, 1)
+
+        def _section(text):
+            lbl = QLabel(text)
+            lbl.setStyleSheet(
+                f"font-size: 10px; font-weight: 700; color: {ACCENT_COLOR}; "
+                "letter-spacing: 0.08em; padding-top: 14px; padding-bottom: 4px;"
+            )
+            return lbl
+
+        if item.evidence:
+            blay.addWidget(_section("EVIDENCE"))
+            for ev in item.evidence:
+                lbl = QLabel(f"· {ev}")
+                lbl.setStyleSheet("font-size: 12px; color: #c0c0d0;")
+                lbl.setWordWrap(True)
+                blay.addWidget(lbl)
+
+        if item.actions:
+            blay.addWidget(_section("ACTIONS"))
+            for action in item.actions:
+                row = QHBoxLayout()
+                lbl = QLabel(action)
+                lbl.setStyleSheet(
+                    "font-size: 11px; color: #a0a0b0; background: #16213e; "
+                    "border-radius: 4px; padding: 5px 8px;"
+                )
+                lbl.setWordWrap(True)
+                lbl.setTextInteractionFlags(Qt.TextSelectableByMouse)
+                copy_btn = QPushButton("Copy")
+                copy_btn.setFixedSize(48, 24)
+                copy_btn.setStyleSheet(
+                    "QPushButton { color: #666; font-size: 10px; border: 1px solid #2a2a4a; "
+                    "border-radius: 3px; background: transparent; }"
+                    "QPushButton:hover { color: #00b4d8; border-color: #00b4d8; }"
+                )
+                copy_btn.clicked.connect(
+                    lambda checked=False, t=action:
+                        QGuiApplication.clipboard().setText(t)
+                )
+                row.addWidget(lbl, 1)
+                row.addWidget(copy_btn)
+                blay.addLayout(row)
+
+        if not item.evidence and not item.actions:
+            blay.addWidget(QLabel("No additional detail available."))
+
+        blay.addStretch()
+
+        # ── Footer buttons ──
+        foot = QHBoxLayout()
+        foot.setContentsMargins(20, 10, 20, 14)
+        if item.matched_id:
+            override_btn = QPushButton("Override verdict…")
+            override_btn.setFixedHeight(30)
+            override_btn.clicked.connect(
+                lambda: _OverrideDialog.run(item, self)
+            )
+            foot.addWidget(override_btn)
+        if item.source != "firmware":
+            report_btn = QPushButton("Report wrong match ↗")
+            report_btn.setFixedHeight(30)
+            report_btn.setStyleSheet(
+                "QPushButton { color: #555; font-size: 11px; border: none; "
+                "background: none; text-decoration: underline; }"
+                "QPushButton:hover { color: #00b4d8; }"
+            )
+            report_btn.clicked.connect(
+                lambda: webbrowser.open(bad_match_url(item, db_build))
+            )
+            foot.addWidget(report_btn)
+        foot.addStretch()
+        close_btn = QPushButton("Close")
+        close_btn.setFixedHeight(30)
+        close_btn.clicked.connect(self.accept)
+        foot.addWidget(close_btn)
+        root.addLayout(foot)
 
 
 _OVERRIDE_VERDICTS = [
